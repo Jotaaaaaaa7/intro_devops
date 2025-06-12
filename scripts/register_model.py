@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 # Set the tracking URI if it's not the default
-mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_tracking_uri(os.getenv('MLFLOW_URL', 'http://localhost:5000'))
 
 client = MlflowClient()
 
