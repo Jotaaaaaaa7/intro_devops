@@ -67,7 +67,7 @@ def main():
         joblib.dump(scaler, MODEL_DIR / "scaler.pkl")
         joblib.dump(encoders, MODEL_DIR / "encoders.pkl")
         mlflow.log_artifact(str(MODEL_DIR / "scaler.pkl"), artifact_path="preprocessing")
-        mlflow.log_artifact(str(MODEL_DIR / "encoders.pkl", artifact_path="preprocessing"))
+        mlflow.log_artifact(str(MODEL_DIR / "encoders.pkl"), artifact_path="preprocessing")
 
         with open("run_id.txt", "w") as f:
             f.write(run.info.run_id)
