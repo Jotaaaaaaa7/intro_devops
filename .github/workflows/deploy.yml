@@ -25,7 +25,7 @@ jobs:
         run: az acr login --name ${{ secrets.ACR_USERNAME }}
 
       - name: Set MODEL_URI environment variable
-        run: echo "MODEL_URI=models:/${{ env.MODEL_NAME }}@$${{ env.MODEL_ALIAS }}" >> $GITHUB_ENV
+        run: echo "MODEL_URI=models:/${{ env.MODEL_NAME }}@${{ env.MODEL_ALIAS }}" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: |
