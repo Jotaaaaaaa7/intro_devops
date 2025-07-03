@@ -57,8 +57,3 @@ jobs:
       - name: Probe REST API
         run: |
           curl --fail http://${{ env.IMAGE_NAME }}-${{ github.run_id }}.eastus.azurecontainer.io:8080/health
-
-      - name: Get container logs
-        if: steps.probe_api.outcome == 'failure'  # Solo ejecuta este paso si el paso anterior falló
-        run: |
-          az container logs --name ${{ env.MODEL_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}
