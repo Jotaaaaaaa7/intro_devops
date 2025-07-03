@@ -19,30 +19,28 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global model, scaler, encoders
-    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000"))
-    model_uri = os.getenv("MODEL_URI")
-    if not model_uri:
-        raise ValueError("MODEL_URI environment variable is not set.")
-    model = mlflow.pyfunc.load_model(model_uri)
+    try:
+        tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+        model_uri = os.getenv("MODEL_URI")
 
-    # Step 1: Get the model version's run ID (if using registry URI)
-    if model_uri.startswith("models:/"):
-        client = mlflow.MlflowClient()
-        name, alias = model_uri.replace("models:/", "").split("@")
-        version_info = client.get_model_version_by_alias(name, alias)
-        run_id = version_info.run_id
-    elif model_uri.startswith("runs:/"):
-        run_id = model_uri.split("/")[1]
-    else:
-        raise ValueError("Unsupported MODEL_URI format.")
+        logging.info(f"Iniciando aplicación")
+        logging.info(f"MLFLOW_TRACKING_URI: {tracking_uri}")
+        logging.info(f"MODEL_URI: {model_uri}")
 
-    # Step 2: Download artifacts from that run
-    scaler_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="preprocessing/scaler.pkl")
-    encoders_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="preprocessing/encoders.pkl")
+        mlflow.set_tracking_uri(tracking_uri)
+        logging.info(f"Conectando a MLflow en: {tracking_uri}")
 
-    # Step 3: Load them into memory
-    scaler = joblib.load(scaler_path)
-    encoders = joblib.load(encoders_path)
+        if not model_uri:
+            raise ValueError("MODEL_URI environment variable is not set.")
+
+        logging.info(f"Cargando modelo desde: {model_uri}")
+        model = mlflow.pyfunc.load_model(model_uri)
+        logging.info(f"Modelo cargado correctamente")
+
+        # Resto del código con logs adicionales...
+    except Exception as e:
+        logging.error(f"Error durante la inicialización: {str(e)}", exc_info=True)
+        raise
     yield
 
 app = FastAPI(lifespan=lifespan)
