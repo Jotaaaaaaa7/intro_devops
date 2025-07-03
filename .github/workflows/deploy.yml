@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }}:latest ./deployment
+          docker build -t ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }} ./deployment
 
       - name: Push Docker image to ACR
         run: |
@@ -40,7 +40,7 @@ jobs:
           az container create \
           --name ${{ env.MODEL_NAME }} \
           --image ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }}:latest \
-          --resource-group ${{secrets.AZURE_RESOURCE_GROUP}} --registry-login-server ${{ secrets.ACR_NAME }} \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --registry-login-server ${{ secrets.ACR_NAME }} \
           --registry-username ${{ secrets.ACR_USERNAME }} \
           --registry-password ${{ secrets.ACR_PASSWORD }} \
           --environment-variables MODEL_URI="models:/${{ env.MODEL_NAME }}@${{ env.MODEL_ALIAS }}" MLFLOW_TRACKING_URI="${{ vars.MLFLOW_URL }}" AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
@@ -49,11 +49,16 @@ jobs:
           --os-type Linux \
           --cpu 0.5 \
           --memory 1.0 \
-          --location ${{ env.AZURE_REGION }}
+          --location eastus
 
       - name: Wait for container to start
         run: sleep 30
 
       - name: Probe REST API
         run: |
-          curl --fail http://${{ env.IMAGE_NAME }}-${{ github.run_id }}.${{ env.AZURE_REGION }}.azurecontainer.io:8080/health
+          curl --fail http://${{ env.IMAGE_NAME }}-${{ github.run_id }}.eastus.azurecontainer.io:8080/health
+
+      - name: Get container logs
+        if: steps.probe_api.outcome == 'failure'  # Solo ejecuta este paso si el paso anterior falló
+        run: |
+          az container logs --name ${{ env.MODEL_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}
