@@ -7,7 +7,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      MODEL_NAME: adult-income-classifier-juan-gonzalo
+      MODEL_NAME: ${{ vars.MODEL_NAME }}
       MODEL_ALIAS: champion
       AZURE_CONTAINER_NAME: model-api-juan-gonzalo
       IMAGE_NAME: model-api-juan-gonzalo
