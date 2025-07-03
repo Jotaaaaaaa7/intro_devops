@@ -19,17 +19,17 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: "${{ secrets.AZURE_CREDENTIALS }}"
+          creds: "${{ secrets.AZURE_CREDENTIAL }}"
 
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{ secrets.ACR_USERNAME }}
 
       - name: Set MODEL_URI environment variable
-        run: echo "MODEL_URI=models:/${{ env.MODEL_NAME }}@$${{ env.MODEL_ALIAS }}" >> $GITHUB_ENV
+        run: echo "MODEL_URI=models:/${{ env.MODEL_NAME }}@${{ env.MODEL_ALIAS }}" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }} ./deployment
+          docker build -t ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }}:latest ./deployment
 
       - name: Push Docker image to ACR
         run: |
@@ -40,7 +40,7 @@ jobs:
           az container create \
           --name ${{ env.MODEL_NAME }} \
           --image ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }}:latest \
-          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --registry-login-server ${{ secrets.ACR_NAME }} \
+          --resource-group ${{secrets.AZURE_RESOURCE_GROUP}} --registry-login-server ${{ secrets.ACR_NAME }} \
           --registry-username ${{ secrets.ACR_USERNAME }} \
           --registry-password ${{ secrets.ACR_PASSWORD }} \
           --environment-variables MODEL_URI="models:/${{ env.MODEL_NAME }}@${{ env.MODEL_ALIAS }}" MLFLOW_TRACKING_URI="${{ vars.MLFLOW_URL }}" AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
@@ -49,11 +49,11 @@ jobs:
           --os-type Linux \
           --cpu 0.5 \
           --memory 1.0 \
-          --location eastus
+          --location ${{ env.AZURE_REGION }}
 
       - name: Wait for container to start
         run: sleep 30
 
       - name: Probe REST API
         run: |
-          curl --fail http://${{ env.IMAGE_NAME }}-${{ github.run_id }}.eastus.azurecontainer.io:8080/health
+          curl --fail http://${{ env.IMAGE_NAME }}-${{ github.run_id }}.${{ env.AZURE_REGION }}.azurecontainer.io:8080/health
