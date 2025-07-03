@@ -24,7 +24,7 @@ Resultado: un artefacto versionado, trazable y probado, listo para producción (
 
 ---
 
-## 3. Despliegue del modelo (`deploy.yml`) ‑ ***actualmente con errores***
+## 3. Despliegue del modelo (`deploy.yml`) ‑ ***❌❌❌ACTUALMENTE CON ERRORES❌❌❌***
 | Paso | Acción | Observación |
 |------|--------|-------------|
 | **Build Docker** | Empaqueta la API FastAPI en una imagen | Correcto |
