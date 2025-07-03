@@ -29,22 +29,22 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_NAME }}/${{ env.IMAGE_MODEL }} ./deployment
+          docker build -t ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }} ./deployment
 
       - name: Push Docker image to ACR
         run: |
-          docker push ${{ secrets.ACR_NAME }}/${{ env.IMAGE_MODEL }}
+          docker push ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }}
 
       - name: Deploy to Azure Container Instances
         run: |
           az container create \
           --name ${{ env.MODEL_NAME }} \
-          --image ${{ secrets.ACR_NAME }}/${{ env.IMAGE_MODEL }}:latest \
+          --image ${{ secrets.ACR_NAME }}/${{ env.IMAGE_NAME }}:latest \
           --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --registry-login-server ${{ secrets.ACR_NAME }} \
           --registry-username ${{ secrets.ACR_USERNAME }} \
           --registry-password ${{ secrets.ACR_PASSWORD }} \
           --environment-variables MODEL_URI="models:/${{ env.MODEL_NAME }}@${{ env.MODEL_ALIAS }}" MLFLOW_TRACKING_URI="${{ vars.MLFLOW_URL }}" AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-          --dns-name-label ${{ env.IMAGE_MODEL }}-${{ github.run_id }} \
+          --dns-name-label ${{ env.IMAGE_NAME }}-${{ github.run_id }} \
           --ports 8080 \
           --os-type Linux \
           --cpu 0.5 \
@@ -57,3 +57,4 @@ jobs:
       - name: Probe REST API
         run: |
           curl --fail http://${{ env.IMAGE_NAME }}-${{ github.run_id }}.eastus.azurecontainer.io:8080/health
+
