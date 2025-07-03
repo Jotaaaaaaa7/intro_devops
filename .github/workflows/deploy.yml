@@ -51,8 +51,19 @@ jobs:
           --memory 1.0 \
           --location eastus
 
-      - name: Wait for container to start
-        run: sleep 30
+      - name: Wait for container to be running
+        run: |
+          for i in {1..10}; do
+            STATUS=$(az container show --name ${{ env.MODEL_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query "instanceView.state" -o tsv)
+            echo "Estado actual: $STATUS"
+            if [ "$STATUS" = "Running" ]; then
+              echo "¡El contenedor está en ejecución!"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "El contenedor no llegó a estado Running a tiempo."
+          exit 1
 
       - name: Probe REST API
         run: |
